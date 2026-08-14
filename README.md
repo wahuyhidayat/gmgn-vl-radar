@@ -33,7 +33,7 @@ Speed labels:
 
 A hot reading measures activity, not safety. `🔥📉` usually means an active sell-off.
 
-The main boards show up to ten rows per chain. Rows are kept tight so both chains remain readable in one Telegram message.
+The main boards show up to ten rows per chain. Rows are kept tight so both chains remain readable in one Telegram message. Below each ranked board, a momentum spike callout lists accelerating bullish tokens (up to six rows); see [Latest radar update](#latest-radar-update).
 
 ## Filters
 
@@ -42,18 +42,18 @@ The default Solana scan uses:
 | Filter | Value |
 | --- | ---: |
 | Interval | 1h |
-| Minimum liquidity | $2,500 |
+| Minimum liquidity | $5,000 |
 | Minimum holders | 200 |
 | Minimum age | 30m |
 | Minimum gas fee | 20 |
-| Minimum smart degen count | 2 |
-| Minimum swaps | 500 |
+| Minimum smart degen count | 6 |
+| Minimum swaps | 1,500 |
 | Minimum market cap | $100,000 |
 | Social profile | Required |
 | Wash trading | Excluded |
-| Creator close | Not required |
+| Creator close | Required |
 
-Robinhood uses the same interval, liquidity, holder, age, smart-degen, swap, and market-cap gates. It does not reuse Solana's minimum gas-fee gate. GMGN reports gas on a different scale for Robinhood, and applying `20` there removed active names from the candidate set.
+Robinhood uses the same interval, liquidity, holder, age, smart-degen, swap, and market-cap gates. It does not reuse Solana's minimum gas-fee gate (GMGN reports gas on a different scale for Robinhood, and applying `20` there removed active names from the candidate set), nor Solana's creator-close and social server filters. Wash trading is still rejected locally for both chains.
 
 ## Requirements
 
@@ -76,7 +76,7 @@ The setup is simple:
 
 Your computer must stay turned on and connected to the internet for scheduled reports to keep running.
 
-The radar sends reports straight to Telegram every five minutes. Hermes only handles the schedule. The cron uses `no_agent: true`, so it does not call an AI model or spend LLM tokens while running.
+The radar sends reports straight to Telegram every ten minutes. Hermes only handles the schedule. The cron uses `no_agent: true`, so it does not call an AI model or spend LLM tokens while running.
 
 Any inexpensive model is fine for the initial Hermes setup because the radar cron does not use it.
 
@@ -193,7 +193,7 @@ The report covers Robinhood alongside Solana. Both chains use GMGN Trending and 
 
 Robinhood keeps the useful activity gates but skips Solana's `min-gas-fee 20` filter. During testing, that filter cut the Robinhood universe from 100 names to 27 and removed active runners such as DJT. Gas values are not directly comparable across the two chains.
 
-The separate momentum callout tables were removed. The report now sticks to the two ranked data boards. `S5M`, `S×`, and `FLOW` remain visible as measurements, but the report does not label a token as an entry.
+Each chain also gets a momentum spike callout below its ranked board: `SOLANA SPIKE` and `ROBINHOOD SPIKE`. A row appears only when the token is accelerating and bullish at the same time — swap acceleration `S× ≥ 1.3`, `FLOW ≥ 1.2`, price up more than 1% in five minutes, buy volume more than 1.05× sell volume, and buys at least 55% of five-minute volume. The `ST` column marks the move stage: `E` (early, ≤ 12% in five minutes), `R` (running, 12–20%), `L` (late, > 20%). Because the spike boards only list bullish tokens, their FLOW arrow is always `📈` (price up and buy volume dominant). The spike tables surface candidates; they do not label a token as an entry.
 
 ## Output
 
@@ -214,6 +214,16 @@ HOTDOG  16.0  4486  653  1.7  127k  🔥📉1.6
 DJT     13.3 20098  343  0.2  582k  🧊📉0.3
 GTAVI   10.2  3757  409  1.3  258k  🔥🔄1.4
 
+SOLANA SPIKE
+SYM     S5M  S×   MC     5M ST   FLOW
+----------------------------------------
+none
+
+ROBINHOOD SPIKE
+SYM     S5M  S×   MC     5M ST   FLOW
+----------------------------------------
+Catsker  91 1.4 112k  +5.2%  E  🔥📈1.3
+
 RULE
 MAX HOLD 1 HOUR.
 Get in, get out, then rotate to next pool.
@@ -230,6 +240,13 @@ Get in, get out, then rotate to next pool.
 | `S×` | Swap acceleration: `(S5M × 12) / S1H`. `1.0` means the current pace matches the one-hour baseline, `1.3` or higher is accelerating, and `2.0` or higher is explosive. |
 | `MC` | Current token market cap. |
 | `FLOW` | Five-minute volume run rate versus rolling one-hour volume, followed by the current direction. |
+
+The spike boards reuse `S5M`, `S×`, `MC`, and `FLOW` with the same meanings, and add:
+
+| Column | Meaning |
+| --- | --- |
+| `5M` | Price change over the latest five minutes, in percent. |
+| `ST` | Move stage: `E` early (≤ 12%), `R` running (12–20%), `L` late (> 20%). |
 
 ## FLOW symbols
 
@@ -307,7 +324,7 @@ install.sh               local installer
 ## Notes
 
 - The report is a scanner, not an execution system.
-- FLOW is a five-minute signal against a one-hour baseline. The report runs every five minutes.
-- Each chain's board shows at most ten rows.
+- FLOW is a five-minute signal against a one-hour baseline. The report runs every ten minutes.
+- Each chain's board shows at most ten rows; each spike board shows at most six rows.
 - Token symbols are display-only. Use the token address before acting on a result.
 - Maximum hold is an operating rule for this setup, not a guarantee of profit.
