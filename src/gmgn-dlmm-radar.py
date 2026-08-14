@@ -30,12 +30,14 @@ LIMIT = 100
 
 
 # GMGN Trending provides the candidate set. Ranking happens locally by V/L.
+# Gate = SxA production config (13 Aug): creator close wajib, smart degen 6,
+# swaps 1500, liquidity 5000. Age tetap 30m (HEAD repo), holder 200, gas 20.
 TREND_CMD = (
     "gmgn-cli market trending --chain sol --interval 1h --limit 100 "
     "--order-by volume --direction desc "
-    "--filter has_social --filter not_wash_trading "
-    "--min-liquidity 2500 --min-holder-count 200 --min-created 30m "
-    "--min-gas-fee 20 --min-smart-degen-count 2 --min-swaps 500 "
+    "--filter creator_close --filter has_social --filter not_wash_trading "
+    "--min-liquidity 5000 --min-holder-count 200 --min-created 30m "
+    "--min-gas-fee 20 --min-smart-degen-count 6 --min-swaps 1500 "
     "--min-marketcap 100000"
 )
 
@@ -65,8 +67,12 @@ def gather(cmd=TREND_CMD):
     return []
 
 def safe_for_dlmm(t):
-    """Reject rows that GMGN explicitly marks as wash trading."""
+    """Robinhood gate (author intent): reject wash trading only."""
     return t.get("is_wash_trading") is not True
+
+def safe_for_dlmm_sol(t):
+    """Solana gate (SxA production config): dev closed + no wash trading."""
+    return t.get("is_wash_trading") is not True and t.get("creator_close") is True
 
 
 def token_price_data(t):
@@ -153,7 +159,7 @@ def flow_5m(t, price_data=None):
 
 def build():
     from datetime import datetime, timezone
-    sol_hits = [t for t in gather(TREND_CMD) if safe_for_dlmm(t)]
+    sol_hits = [t for t in gather(TREND_CMD) if safe_for_dlmm_sol(t)]
     robinhood_hits = [t for t in gather(ROBINHOOD_CMD) if safe_for_dlmm(t)]
 
     def rank_key(t):
