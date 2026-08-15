@@ -180,6 +180,7 @@ def build():
         local_tz = timezone.utc
     local_time = datetime.now(local_tz).strftime("%H:%M")
     lines = [f"GMGN V/L — {local_time} {RADAR_LOCATION}", ""]
+    log_entries = {"SOLANA": [], "ROBINHOOD": []}
 
     def money(v):
         v = float(v or 0)
@@ -208,6 +209,16 @@ def build():
             speed = f"{swap_speed:.1f}" if swap_speed is not None else "-"
             mc = money(t.get('market_cap'))
             lines.append(f"{sym:<7} {vl:>4} {swaps_1h:>5} {swaps_5m:>4} {speed:>4} {mc:>5}  {flow:>5}")
+            log_entries[title].append({
+                "symbol": t.get("symbol"),
+                "address": t.get("address"),
+                "vl": vl,
+                "swaps_1h": swaps_1h,
+                "swaps_5m": swaps_5m,
+                "swap_speed": swap_speed,
+                "market_cap": t.get("market_cap"),
+                "flow": flow,
+            })
 
     add_section("SOLANA", sol_hits)
     lines.append("")
@@ -230,7 +241,22 @@ def build():
         "MAX HOLD 1 HOUR.",
         "Get in, get out, then rotate to next pool.",
     ])
-    return "```\n" + "\n".join(lines) + "\n```"
+    msg = "```\n" + "\n".join(lines) + "\n```"
+    # Persist a machine-readable snapshot for later analysis. Kept outside
+    # the repo so credentials and history stay off git.
+    try:
+        log_path = Path.home() / ".config/gmgn-dlmm-radar/reports.jsonl"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        record = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "tz": local_time,
+            "chains": log_entries,
+        }
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception:
+        pass
+    return msg
 
 def get_chat_id():
     if CHAT_ID:
