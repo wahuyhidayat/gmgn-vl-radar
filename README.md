@@ -33,7 +33,7 @@ Speed labels:
 
 A hot reading measures activity, not safety. `🔥📉` usually means an active sell-off.
 
-The main boards show up to ten rows per chain. Rows are kept tight so both chains remain readable in one Telegram message. Below each ranked board, a momentum spike callout lists accelerating bullish tokens (up to six rows); see [Latest radar update](#latest-radar-update).
+The main boards show up to ten rows per chain. Rows are kept tight so both chains remain readable in one Telegram message.
 
 ## Filters
 
@@ -193,8 +193,6 @@ The report covers Robinhood alongside Solana. Both chains use GMGN Trending and 
 
 Robinhood keeps the useful activity gates but skips Solana's `min-gas-fee 20` filter. During testing, that filter cut the Robinhood universe from 100 names to 27 and removed active runners such as DJT. Gas values are not directly comparable across the two chains.
 
-Each chain also gets a momentum spike callout below its ranked board: `SOLANA SPIKE` and `ROBINHOOD SPIKE`. A row appears only when the token is accelerating and bullish at the same time — swap acceleration `S× ≥ 1.3`, `FLOW ≥ 1.2`, price up more than 1% in five minutes, buy volume more than 1.05× sell volume, and buys at least 55% of five-minute volume. The `ST` column marks the move stage: `E` (early, ≤ 12% in five minutes), `R` (running, 12–20%), `L` (late, > 20%). Because the spike boards only list bullish tokens, their FLOW arrow is always `📈` (price up and buy volume dominant). The spike tables surface candidates; they do not label a token as an entry.
-
 ## Output
 
 ```text
@@ -214,16 +212,6 @@ HOTDOG  16.0  4486  653  1.7  127k  🔥📉1.6
 DJT     13.3 20098  343  0.2  582k  🧊📉0.3
 GTAVI   10.2  3757  409  1.3  258k  🔥🔄1.4
 
-SOLANA SPIKE
-SYM     S5M  S×   MC     5M ST   FLOW
-----------------------------------------
-none
-
-ROBINHOOD SPIKE
-SYM     S5M  S×   MC     5M ST   FLOW
-----------------------------------------
-Catsker  91 1.4 112k  +5.2%  E  🔥📈1.3
-
 RULE
 MAX HOLD 1 HOUR.
 Get in, get out, then rotate to next pool.
@@ -240,13 +228,6 @@ Get in, get out, then rotate to next pool.
 | `S×` | Swap acceleration: `(S5M × 12) / S1H`. `1.0` means the current pace matches the one-hour baseline, `1.3` or higher is accelerating, and `2.0` or higher is explosive. |
 | `MC` | Current token market cap. |
 | `FLOW` | Five-minute volume run rate versus rolling one-hour volume, followed by the current direction. |
-
-The spike boards reuse `S5M`, `S×`, `MC`, and `FLOW` with the same meanings, and add:
-
-| Column | Meaning |
-| --- | --- |
-| `5M` | Price change over the latest five minutes, in percent. |
-| `ST` | Move stage: `E` early (≤ 12%), `R` running (12–20%), `L` late (> 20%). |
 
 ## FLOW symbols
 
@@ -282,6 +263,44 @@ S× 0.5 + 🧊📈0.4   activity is slowing even if price is briefly rising
 
 A high `S×` is not automatically bullish. Bot churn and panic selling can also create a large number of swaps.
 
+## Busy swaps, cold FLOW, and bearish direction
+
+A busy `S5M` does not automatically mean fresh buying momentum. When swaps stay active but FLOW is cold and points down, the pool may be processing many small trades while nominal volume is fading and sell pressure remains dominant.
+
+This is not a momentum entry signal. Treat it as a directional setup that still needs confirmation from the chart, liquidity, and pair orientation.
+
+### Possible DLMM setup
+
+If the bearish direction remains intact, a single-sided Bid-Ask or Curve distribution may be placed below the current price for the expected downward move.
+
+The exact side depends on:
+
+- which token is base and which is quote;
+- which asset is deposited;
+- where the bins sit relative to the active price;
+- which asset the position is expected to convert into.
+
+Do not assume that Bid-Ask or Curve is automatically bearish. Check the pair orientation and preview the expected inventory conversion before opening the position.
+
+### Operating rules
+
+- Use `S5M` as proof of activity, not as a bullish signal.
+- Confirm that FLOW remains cold and the short-term direction remains bearish.
+- Check the chart for continued lower highs, weak rebounds, or persistent sell pressure.
+- Build the range below the current price. Do not chase price before it reaches the range.
+- Wait for price to enter the selected range before treating the setup as active.
+- Exit early if price reverses, buy pressure returns, or the bearish thesis fails.
+- Hold for no longer than one hour under this rotation strategy.
+- Close the position after the rotation and move to the next suitable pool.
+
+### Risks
+
+Busy swaps can come from bots or many small transactions. They do not guarantee useful fee volume.
+
+If price keeps falling, a single-sided position can convert into an unwanted token and continue losing value. A range may also remain untouched, move out of range quickly, or produce too little fee income to cover slippage and execution costs.
+
+Check liquidity, token quality, slippage, pair orientation, and expected inventory conversion before entering. The one-hour limit is a discipline rule for this setup, not protection against loss.
+
 ## High-momentum example
 
 The radar can also be used to find short, high-momentum bursts. The screenshot below shows BUDDY appearing in the 10:01 AM report with:
@@ -310,6 +329,19 @@ get out and rotate to the next pool
 
 The screenshot is an example, not a performance guarantee. Market cap doubling does not guarantee that every position receives the same return. Entry timing, exit timing, liquidity, slippage, and fees all affect the result. The radar surfaces activity; it does not place trades or decide exits.
 
+## Entry discipline
+
+The core rule: do not enter the token side at the current price. A hot `V/L` or busy `S5M` is a liquidity reading, not a reason to buy. If the goal is to accumulate lower, a spot limit order is usually the cleaner choice. It avoids inventory conversion and extra execution costs, and it does the same job when price arrives.
+
+A few habits that keep the radar useful instead of expensive:
+
+- Never buy the token side at the current price just because the board looks active.
+- For a simple "buy lower" goal, place a spot limit order rather than a DLMM range.
+- If you still want DLMM, use a single-sided bid under the price and wait for price to reach it. Do not chase the level early.
+- Use DLMM single-sided bids only when price is expected to enter the range and chop there, so the position earns fees on top of the accumulation. A range placed far from the market just sits empty and earns nothing.
+- Watch the pool size. A tiny pool, even with a high `V/L`, can pay fees too small to matter after slippage and gas.
+- Exit when the thesis breaks, not when the position is merely underwater. Being down is not a reason to add; a dead range is.
+
 ## Files
 
 ```text
@@ -325,6 +357,6 @@ install.sh               local installer
 
 - The report is a scanner, not an execution system.
 - FLOW is a five-minute signal against a one-hour baseline. The report runs every ten minutes.
-- Each chain's board shows at most ten rows; each spike board shows at most six rows.
+- Each chain's board shows at most ten rows.
 - Token symbols are display-only. Use the token address before acting on a result.
 - Maximum hold is an operating rule for this setup, not a guarantee of profit.
